@@ -2,13 +2,11 @@ package db
 
 import (
 	"context"
-	"errors"
-	"log"
 	"time"
 
 	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go"
-	"google.golang.org/api/iterator"
+	"github.com/heartgg/memurl/service/generator"
 	"google.golang.org/api/option"
 )
 
@@ -32,20 +30,24 @@ func Init() (*firestore.Client, error) {
 	return client, nil
 }
 
-func MapURLs(client *firestore.Client, originalUrl string, generatedUrl string) (string, error) {
-	qIter := client.Collection("urls").Where("memorable", "==", generatedUrl).Documents(context.Background())
-	_, err := qIter.Next()
-	if err != iterator.Done {
-		// MapURLs(client, originalUrl, generatedUrl)
-		return "", errors.New("Duplicate generated URL found")
+func MapURL(client *firestore.Client, originalUrl string) (string, time.Time, error) {
+	data := DatabaseURL{}
+	qIter := client.Collection("urls").Where("original", "==", originalUrl).Documents(context.Background())
+	docSnap, err := qIter.Next()
+	if docSnap != nil {
+		docSnap.DataTo(&data)
+		return data.MemorableURL, data.Expiration, nil
 	}
-	docSnap, err := client.Collection("urls").NewDoc().Set(context.Background(), DatabaseURL{
+	generatedUrl := generator.GenerateURL()
+	data = DatabaseURL{
 		Expiration:   time.Now().Add(24 * time.Hour),
 		OriginalURL:  originalUrl,
-		MemorableURL: generatedUrl})
-	if err != nil {
-		return "", err
+		MemorableURL: generatedUrl,
 	}
-	log.Println(docSnap)
-	return generatedUrl, err
+	_, err = client.Collection("urls").NewDoc().Set(context.Background(), data)
+	if err != nil {
+		generator.BreakURL(generatedUrl)
+		return "", time.Now(), err
+	}
+	return data.MemorableURL, data.Expiration, nil
 }

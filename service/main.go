@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"cloud.google.com/go/firestore"
 	"github.com/heartgg/memurl/service/db"
 	"github.com/heartgg/memurl/service/generator"
 )
@@ -15,8 +16,11 @@ type ResponseURL struct {
 	MemorableURL string    `json:"url"`
 }
 
+var client *firestore.Client
+
 func main() {
-	client, err := db.Init()
+	var err error
+	client, err = db.Init()
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -24,16 +28,6 @@ func main() {
 	if err := generator.LoadWords(); err != nil {
 		log.Fatalln(err)
 	}
-	log.Println(generator.GenerateURL())
-	// doc, err := client.Collection("urls").Doc("hEgtQQqS7yjymkqF8ZHk").Get(context.Background())
-	// if err != nil {
-	// 	log.Fatalln(err)
-	// }
-	// urlDoc := db.DatabaseURL{}
-	// if err := doc.DataTo(&urlDoc); err != nil {
-	// 	log.Fatalln(err)
-	// }
-	// log.Println(urlDoc)
 
 	http.Handle("/", http.FileServer(http.Dir("./static")))
 	http.HandleFunc("/get_url", getUrl)
@@ -42,13 +36,21 @@ func main() {
 
 func getUrl(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	log.Println(r.Form)
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	data, err := json.Marshal(ResponseURL{Expiration: time.Now().Add(24 * time.Hour), MemorableURL: "test"})
+	memorableUrl, expiration, err := db.MapURL(client, r.Form["user-url"][0])
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Panicln(err)
 	}
-	w.Write(data)
+	w.WriteHeader(http.StatusCreated)
+	data := ResponseURL{
+		Expiration:   expiration,
+		MemorableURL: memorableUrl,
+	}
+	resp, err := json.Marshal(data)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Panicln(err)
+	}
+	w.Write(resp)
 }

@@ -4,14 +4,18 @@ import (
 	"bufio"
 	"math/rand"
 	"os"
+	"strings"
 	"time"
 )
 
-const ADJ_LENGTH int = 1347
-const NOUN_LENGTH int = 1525
+const ADJ_MAX_LENGTH int = 1347
+const NOUN_MAX_LENGTH int = 1525
 
-var adjectives []string = make([]string, ADJ_LENGTH)
-var nouns []string = make([]string, NOUN_LENGTH)
+var adj_count int = ADJ_MAX_LENGTH
+var noun_count int = NOUN_MAX_LENGTH
+
+var adjectives []string = make([]string, ADJ_MAX_LENGTH)
+var nouns []string = make([]string, NOUN_MAX_LENGTH)
 
 // Loads a provided slice with strings from a file referenced by the filepath
 func loadSlice(filepath string, slice []string) error {
@@ -34,6 +38,8 @@ func loadSlice(filepath string, slice []string) error {
 
 // Asynchronously runs loadSlice functions to populate approperiate word slices
 func LoadWords() error {
+	rand.Seed(time.Now().UnixNano())
+
 	aCh := make(chan error)
 	nCh := make(chan error)
 
@@ -55,8 +61,27 @@ func LoadWords() error {
 
 // Returns a randomly generated adjective-word string from provided word slices
 func GenerateURL() string {
-	rand.Seed(time.Now().UnixNano())
-	adjIndex := rand.Intn(ADJ_LENGTH)
-	nounIndex := rand.Intn(NOUN_LENGTH)
-	return adjectives[adjIndex] + "-" + nouns[nounIndex]
+	adjIndex := rand.Intn(ADJ_MAX_LENGTH)
+	nounIndex := rand.Intn(NOUN_MAX_LENGTH)
+	var result string = adjectives[adjIndex] + "_" + nouns[nounIndex]
+	removeWord(&adjectives, adjIndex, &adj_count)
+	removeWord(&nouns, nounIndex, &noun_count)
+	return result
+}
+
+func BreakURL(memorableUrl string) {
+	words := strings.Split(memorableUrl, "_")
+	appendWord(&adjectives, words[0], &adj_count)
+	appendWord(&nouns, words[1], &noun_count)
+}
+
+func removeWord(slice *[]string, index int, counter *int) {
+	(*slice)[index] = (*slice)[len(*slice)-1]
+	*counter--
+	*slice = (*slice)[:len(*slice)-1]
+}
+
+func appendWord(slice *[]string, word string, counter *int) {
+	*slice = append(*slice, word)
+	*counter++
 }
