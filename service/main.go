@@ -1,13 +1,13 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/heartgg/memurl/service/db"
+	"github.com/heartgg/memurl/service/generator"
 )
 
 type ResponseURL struct {
@@ -20,22 +20,27 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	doc, err := client.Collection("urls").Doc("hEgtQQqS7yjymkqF8ZHk").Get(context.Background())
-	if err != nil {
+	defer client.Close()
+	if err := generator.LoadWords(); err != nil {
 		log.Fatalln(err)
 	}
-	urlDoc := db.DatabaseURL{}
-	if err := doc.DataTo(&urlDoc); err != nil {
-		log.Fatalln(err)
-	}
-	log.Println(urlDoc)
+	log.Println(generator.GenerateURL())
+	// doc, err := client.Collection("urls").Doc("hEgtQQqS7yjymkqF8ZHk").Get(context.Background())
+	// if err != nil {
+	// 	log.Fatalln(err)
+	// }
+	// urlDoc := db.DatabaseURL{}
+	// if err := doc.DataTo(&urlDoc); err != nil {
+	// 	log.Fatalln(err)
+	// }
+	// log.Println(urlDoc)
 
 	http.Handle("/", http.FileServer(http.Dir("./static")))
-	http.HandleFunc("/generate_url", generateUrl)
+	http.HandleFunc("/get_url", getUrl)
 	http.ListenAndServe(":3000", nil)
 }
 
-func generateUrl(w http.ResponseWriter, r *http.Request) {
+func getUrl(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	log.Println(r.Form)
 	w.Header().Set("Content-Type", "application/json")
