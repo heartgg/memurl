@@ -11,7 +11,7 @@
         <input type="text" name="user-url" id="user-url">
         <input type="submit" value="submit">
     </form>
-    <p id="response-url"></p>
+    <a id="response-url"></a>
     <p id="time-left"></p>
 </body>
 </html>
@@ -29,7 +29,8 @@
             type: "POST",
             data: form.serialize(),
             success: function (response) {
-                $("#response-url").text(response.url);
+                const url = window.location.protocol + "//" + window.location.host + "/"+ response.url
+                $("#response-url").text(url).attr("href", url);
                 expiration = response.expiration;
             }
         });

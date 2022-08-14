@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/firestore"
+	"github.com/gorilla/mux"
 	"github.com/heartgg/memurl/service/db"
 	"github.com/heartgg/memurl/service/generator"
 )
@@ -28,10 +29,11 @@ func main() {
 	if err := generator.LoadWords(); err != nil {
 		log.Fatalln(err)
 	}
-
-	http.Handle("/", http.FileServer(http.Dir("./static")))
-	http.HandleFunc("/get_url", getUrl)
-	http.ListenAndServe(":3000", nil)
+	r := mux.NewRouter()
+	r.Handle("/", http.FileServer(http.Dir("./static")))
+	r.HandleFunc("/get_url", getUrl)
+	r.HandleFunc("/{link}", redirect)
+	http.ListenAndServe(":3000", r)
 }
 
 func getUrl(w http.ResponseWriter, r *http.Request) {
@@ -53,4 +55,17 @@ func getUrl(w http.ResponseWriter, r *http.Request) {
 		log.Panicln(err)
 	}
 	w.Write(resp)
+}
+
+func redirect(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	link, ok := vars["link"]
+	if !ok {
+		w.WriteHeader(http.StatusNotFound)
+	}
+	originalUrl, err := db.RetrieveURL(client, link)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+	}
+	http.Redirect(w, r, originalUrl, http.StatusSeeOther)
 }
