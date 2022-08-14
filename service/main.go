@@ -5,9 +5,7 @@ import (
 	"log"
 	"time"
 
-	firebase "firebase.google.com/go"
-
-	"google.golang.org/api/option"
+	"github.com/heartgg/memurl/service/db"
 )
 
 type URL struct {
@@ -17,16 +15,10 @@ type URL struct {
 }
 
 func main() {
-	// TODO change this when deploying to firebase
-	opt := option.WithCredentialsFile("./gcp_key.json")
-	app, err := firebase.NewApp(context.Background(), nil, opt)
-
-	client, err := app.Firestore(context.Background())
+	client, err := db.Init()
 	if err != nil {
 		log.Fatalln(err)
 	}
-	defer client.Close()
-
 	doc, err := client.Collection("urls").Doc("hEgtQQqS7yjymkqF8ZHk").Get(context.Background())
 	if err != nil {
 		log.Fatalln(err)
