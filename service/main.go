@@ -18,7 +18,7 @@ type URL struct {
 
 func main() {
 	// TODO change this when deploying to firebase
-	opt := option.WithCredentialsFile("../memurl/serviceAccountKey.json")
+	opt := option.WithCredentialsFile("./gcp_key.json")
 	app, err := firebase.NewApp(context.Background(), nil, opt)
 
 	client, err := app.Firestore(context.Background())
