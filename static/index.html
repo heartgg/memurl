@@ -11,6 +11,7 @@
         <input type="text" name="user-url" id="user-url">
         <input type="submit" value="submit">
     </form>
+    <p id="error"></p>
     <a id="response-url"></a>
     <p id="time-left"></p>
 </body>
@@ -28,10 +29,19 @@
             url: "/get_url",
             type: "POST",
             data: form.serialize(),
+            beforeSend: function () {
+                expiration = null
+                $("#error").text("");
+                $("#response-url").text("").attr("href", "");
+                $("#time-left").text("");
+            },
             success: function (response) {
-                const url = window.location.protocol + "//" + window.location.host + "/"+ response.url
+                const url = window.location.protocol + "//" + window.location.host + "/u/"+ response.url
                 $("#response-url").text(url).attr("href", url);
                 expiration = response.expiration;
+            },
+            error: function (response) {
+                $("#error").text(response.status + " " + response.statusText);
             }
         });
     });

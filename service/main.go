@@ -34,7 +34,7 @@ func main() {
 
 	r.Handle("/", http.FileServer(http.Dir("./static")))
 	r.HandleFunc("/get_url", getUrlHandler)
-	r.HandleFunc("/{link}", redirectHandler)
+	r.HandleFunc("/u/{link}", redirectHandler)
 	http.ListenAndServe(":3000", r)
 }
 
@@ -60,6 +60,7 @@ func getUrlHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	w.Write(resp)
+	return
 }
 
 // Handler that redirects using the memorable link to original link
