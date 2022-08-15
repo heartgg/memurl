@@ -29,43 +29,53 @@ func main() {
 	if err := generator.LoadWords(); err != nil {
 		log.Fatalln(err)
 	}
+
 	r := mux.NewRouter()
+
 	r.Handle("/", http.FileServer(http.Dir("./static")))
-	r.HandleFunc("/get_url", getUrl)
-	r.HandleFunc("/{link}", redirect)
+	r.HandleFunc("/get_url", getUrlHandler)
+	r.HandleFunc("/{link}", redirectHandler)
 	http.ListenAndServe(":3000", r)
 }
 
-func getUrl(w http.ResponseWriter, r *http.Request) {
+// Handler that maps user's url to a generated url and returns the generated url and expiration date
+func getUrlHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	w.Header().Set("Content-Type", "application/json")
-	memorableUrl, expiration, err := db.MapURL(client, r.Form["user-url"][0])
+	databaseUrl, err := db.MapURL(client, r.Form["user-url"][0])
 	if err != nil {
+		log.Printf("[getUrl handler] MapURL threw error: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
-		log.Panicln(err)
+		return
 	}
-	w.WriteHeader(http.StatusCreated)
 	data := ResponseURL{
-		Expiration:   expiration,
-		MemorableURL: memorableUrl,
+		Expiration:   databaseUrl.Expiration,
+		MemorableURL: databaseUrl.MemorableURL,
 	}
 	resp, err := json.Marshal(data)
 	if err != nil {
+		log.Printf("[getUrl handler] Data marshal threw error: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
-		log.Panicln(err)
+		return
 	}
+	w.WriteHeader(http.StatusOK)
 	w.Write(resp)
 }
 
-func redirect(w http.ResponseWriter, r *http.Request) {
+// Handler that redirects using the memorable link to original link
+func redirectHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	link, ok := vars["link"]
 	if !ok {
+		log.Printf("[redirect handler] Issue getting memorable link: %v", vars)
 		w.WriteHeader(http.StatusNotFound)
+		return
 	}
 	originalUrl, err := db.RetrieveURL(client, link)
 	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
+		log.Printf("[redirect handler] RetrieveURL threw error: %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 	http.Redirect(w, r, originalUrl, http.StatusSeeOther)
 }

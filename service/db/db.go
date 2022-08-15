@@ -17,6 +17,7 @@ type DatabaseURL struct {
 	OriginalURL  string    `firestore:"original"`
 }
 
+// Initiates the firestore db and returns the firestore client
 func Init() (*firestore.Client, error) {
 	opt := option.WithCredentialsFile("./gcp_key.json")
 	ctx := context.Background()
@@ -32,14 +33,15 @@ func Init() (*firestore.Client, error) {
 	return client, nil
 }
 
-func MapURL(client *firestore.Client, originalUrl string) (string, time.Time, error) {
+// Maps the original URL to a generated URL,
+func MapURL(client *firestore.Client, originalUrl string) (DatabaseURL, error) {
 	data := DatabaseURL{}
 	ctx := context.Background()
 	qIter := client.Collection("urls").Where("original", "==", originalUrl).Documents(ctx)
 	docSnap, err := qIter.Next()
 	if docSnap != nil {
 		docSnap.DataTo(&data)
-		return data.MemorableURL, data.Expiration, nil
+		return data, nil
 	}
 	generatedUrl := generator.GenerateURL()
 	data = DatabaseURL{
@@ -50,11 +52,12 @@ func MapURL(client *firestore.Client, originalUrl string) (string, time.Time, er
 	_, err = client.Collection("urls").NewDoc().Set(ctx, data)
 	if err != nil {
 		generator.BreakURL(generatedUrl)
-		return "", time.Now(), err
+		return data, err
 	}
-	return data.MemorableURL, data.Expiration, nil
+	return data, nil
 }
 
+// Gets the original URL using the memorable URL
 func RetrieveURL(client *firestore.Client, memorableUrl string) (string, error) {
 	ctx := context.Background()
 	qIter := client.Collection("urls").Where("memorable", "==", memorableUrl).Documents(ctx)
