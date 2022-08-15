@@ -9,7 +9,7 @@ This app is currently hosted on Heroku.
 Check it out [here](https://memurl.herokuapp.com/).
 
 ## Running Memurl Locally
-Before running anything, make sure you have installed [Go](https://go.dev/doc/install) on your system and set your [GOPATH](https://go.dev/doc/gopath_code) approperiately. This will dictate where this code will need to be cloned (GOPATH can be changed, so don't worry if you already cloned this repo somewhere).
+Before running anything, make sure you have installed [Go](https://go.dev/doc/install) on your system and set your [GOPATH](https://go.dev/doc/gopath_code) approperiately. This will dictate where the code will need to be cloned.
 
 After you have Go installed, clone this repository: (All of the commands in these instructions are for Windows Powershell)
 ```powershell
@@ -27,7 +27,7 @@ $env:PORT=3000
 
 Now you can run this command in your terminal to startup the server:
 ```go
-go run server.go
+go run service/main.go
 ```
 The app should now be accessible in your browser through `localhost:3000` (if you set the PORT variable to 3000)
 
