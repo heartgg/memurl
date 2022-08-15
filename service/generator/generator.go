@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-const ADJ_MAX_LENGTH int = 1347
+const ADJ_MAX_LENGTH int = 1313
 const NOUN_MAX_LENGTH int = 1525
 
 var adj_count int = ADJ_MAX_LENGTH
