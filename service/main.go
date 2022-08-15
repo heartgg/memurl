@@ -37,6 +37,8 @@ func main() {
 	r.Handle("/", http.FileServer(http.Dir("./static")))
 	r.HandleFunc("/get_url", getUrlHandler)
 	r.HandleFunc("/u/{link}", redirectHandler)
+
+	log.Printf("Listening on port: %v", port)
 	http.ListenAndServe(":"+port, r)
 }
 
