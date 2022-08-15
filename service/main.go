@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"cloud.google.com/go/firestore"
@@ -30,12 +31,13 @@ func main() {
 		log.Fatalln(err)
 	}
 
+	port := os.Getenv("PORT")
 	r := mux.NewRouter()
 
 	r.Handle("/", http.FileServer(http.Dir("./static")))
 	r.HandleFunc("/get_url", getUrlHandler)
 	r.HandleFunc("/u/{link}", redirectHandler)
-	http.ListenAndServe(":3000", r)
+	http.ListenAndServe(":"+port, r)
 }
 
 // Handler that maps user's url to a generated url and returns the generated url and expiration date
