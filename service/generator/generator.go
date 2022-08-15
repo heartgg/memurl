@@ -44,10 +44,10 @@ func LoadWords() error {
 	nCh := make(chan error)
 
 	go func() {
-		aCh <- loadSlice("./service/generator/english-adjectives.txt", adjectives)
+		aCh <- loadSlice("./dict/english-adjectives.txt", adjectives)
 	}()
 	go func() {
-		nCh <- loadSlice("./service/generator/english-nouns.txt", nouns)
+		nCh <- loadSlice("./dict/english-nouns.txt", nouns)
 	}()
 
 	if err := <-aCh; err != nil {
