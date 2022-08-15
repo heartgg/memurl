@@ -42,7 +42,12 @@ func main() {
 func getUrlHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	w.Header().Set("Content-Type", "application/json")
-	databaseUrl, err := db.MapURL(client, r.Form["user-url"][0])
+	url := r.Form["user-url"][0]
+	if len(url) == 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	databaseUrl, err := db.MapURL(client, url)
 	if err != nil {
 		log.Printf("[getUrl handler] MapURL threw error: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -69,7 +74,7 @@ func redirectHandler(w http.ResponseWriter, r *http.Request) {
 	link, ok := vars["link"]
 	if !ok {
 		log.Printf("[redirect handler] Issue getting memorable link: %v", vars)
-		w.WriteHeader(http.StatusNotFound)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	originalUrl, err := db.RetrieveURL(client, link)

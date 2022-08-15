@@ -7,9 +7,11 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 </head>
 <body>
+    <h1>Memurl</h1>
+    <p>Enter a link which you want to make memorable/easy to spell.</p>
     <form id="generate-url" name="generate-url" action="">
-        <input type="text" name="user-url" id="user-url">
-        <input type="submit" value="submit">
+        <input type="text" name="user-url" id="user-url" placeholder="Enter URL">
+        <input type="submit" value="Submit">
     </form>
     <p id="error"></p>
     <a id="response-url"></a>
@@ -66,8 +68,39 @@
         if (expiration == null)
             return;
         timeRemaining = new Date(expiration) - Date.now();
-        $("#time-left").text(getPaddedTime(timeRemaining))
+        $("#time-left").text("Link expires in " + getPaddedTime(timeRemaining))
     }
 
     setInterval(updateTimer, 1000)
 </script>
+
+<style>
+    body {
+        color-scheme: dark;
+        background-color: #1f2124;
+        font-family: sans-serif;
+    }
+
+    input[type=text] {
+        width: 20rem;
+        padding: 12px 20px;
+        box-sizing: border-box;
+        font-size: large;
+    }
+    input[type=submit] {
+        width: 10rem;
+        padding: 12px 20px;
+        box-sizing: border-box;
+        font-size: large;
+    }
+    h1, p, a {
+        color: white;
+        padding: 0px 20px;
+    }
+    h1 {
+        padding-top: 12px;
+    }
+    form {
+        padding: 12px 20px;
+    }
+</style>
