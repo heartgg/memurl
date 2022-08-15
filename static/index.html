@@ -38,8 +38,8 @@
                 $("#time-left").text("");
             },
             success: function (response) {
-                const url = window.location.protocol + "//" + window.location.host + "/u/"+ response.url
-                $("#response-url").text(url).attr("href", url);
+                const url = window.location.host + "/u/"+ response.url
+                $("#response-url").text(url).attr("href", window.location.protocol + "//" + url);
                 expiration = response.expiration;
             },
             error: function (response) {
