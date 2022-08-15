@@ -8,7 +8,7 @@ WARNING: The generated links do expire after a certain amount of time, so it's n
 This app is currently hosted on Heroku.
 Check it out [here](https://memurl.herokuapp.com/).
 
-## Running Memurl Locally
+## Hosting Memurl Locally
 Before running anything, make sure you have installed [Go](https://go.dev/doc/install) on your system and set your [GOPATH](https://go.dev/doc/gopath_code) approperiately. This will dictate where the code will need to be cloned.
 
 After you have Go installed, clone this repository: (All of the commands in these instructions are for Windows Powershell)
